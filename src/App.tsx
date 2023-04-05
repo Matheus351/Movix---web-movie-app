@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { fetchData } from './api/api'
 import { useSelector, useDispatch } from 'react-redux'
-import { getApiConfiguration } from './store/homeSlice'
+import { getApiConfiguration, getGenres } from './store/homeSlice'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import Home from './api/pages/home/Home'
@@ -22,20 +22,45 @@ function App() {
   }, [])
 
 
+  useEffect(() => {
+    fetchApiConfig();
+    genresCall();
+  }, []);
+
+
   const fetchApiConfig = () => {
 
     fetchData("/configuration").then((res) => {
-        console.log(res);
+      console.log(res);
 
-        const url = {
-            backdrop: res.images.secure_base_url + "original",
-            poster: res.images.secure_base_url + "original",
-            profile: res.images.secure_base_url + "original",
-        };
+      const url = {
+        backdrop: res.images.secure_base_url + "original",
+        poster: res.images.secure_base_url + "original",
+        profile: res.images.secure_base_url + "original",
+      };
 
-        dispatch(getApiConfiguration(url));
+      dispatch(getApiConfiguration(url));
     });
-};
+  };
+
+
+  const genresCall = async () => {
+    let promises: Promise<any>[] = [];
+    let endPoints = ["tv", "movie"];
+    let allGenres:any = {};
+
+    endPoints.forEach((url) => {
+      promises.push(fetchData(`/genre/${url}/list`));
+    });
+
+    const data = await Promise.all(promises);
+    console.log(data);
+    data.map(({ genres }) => {
+      return genres.map((item: { id: string | number }) => (allGenres[item.id] = item));
+    });
+
+    dispatch(getGenres(allGenres));
+  };
 
   return (
     <BrowserRouter>
