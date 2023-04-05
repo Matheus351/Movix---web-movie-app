@@ -11,7 +11,7 @@ const Home = () => {
         <HeroBanner/>
         <Trending />
         <TopRated/>
-        <Popular/>
+        <Popular/> 
     </div>
   )
 }
